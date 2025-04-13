@@ -8,10 +8,10 @@ import ThankYou from './components/ThankYou';
 import { Toaster } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 
-// Define API base URL - make sure this matches your backend port
-export const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://gym-backend-hz0n.onrender.com' 
-  : 'http://localhost:3000';
+// Update the API base URL
+const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://backend-na54.onrender.com' 
+  : 'http://localhost:5000';
 
 // Create a separate NavBar component that uses useLocation
 function NavBar({ isAdminLoggedIn, onLogout }: { isAdminLoggedIn: boolean; onLogout: () => void }) {
