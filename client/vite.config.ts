@@ -7,4 +7,25 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  build: {
+    rollupOptions: {
+      external: ['date-fns'],
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          datefns: ['date-fns']
+        }
+      }
+    }
+  },
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'https://backend-na54.onrender.com',
+        changeOrigin: true,
+        secure: false
+      }
+    }
+  }
 });
