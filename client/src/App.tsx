@@ -7,11 +7,7 @@ import AdminLogin from './components/AdminLogin';
 import ThankYou from './components/ThankYou';
 import { Toaster } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
-
-// Update the API base URL
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://backend-na54.onrender.com' 
-  : 'http://localhost:5000';
+import { API_BASE_URL } from './config';
 
 // Create a separate NavBar component that uses useLocation
 function NavBar({ isAdminLoggedIn, onLogout }: { isAdminLoggedIn: boolean; onLogout: () => void }) {
