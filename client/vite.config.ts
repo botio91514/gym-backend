@@ -18,6 +18,7 @@ export default defineConfig({
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom'],
           icons: ['lucide-react'],
+          toast: ['react-hot-toast'],
         },
       },
     },
@@ -35,6 +36,6 @@ export default defineConfig({
     'process.env': process.env,
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', 'lucide-react'],
+    include: ['react', 'react-dom', 'react-router-dom', 'lucide-react', 'react-hot-toast'],
   },
 });
