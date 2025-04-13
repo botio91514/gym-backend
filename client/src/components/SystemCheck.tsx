@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { API_BASE_URL } from '../config';
+import { API_BASE_URL } from '../App';
 import { toast } from 'react-hot-toast';
 
 interface SystemStatus {
