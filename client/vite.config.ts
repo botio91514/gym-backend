@@ -16,8 +16,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react-hot-toast', 'date-fns', 'lucide-react'],
-          icons: ['lucide-react']
+          vendor: ['react-hot-toast', 'date-fns', 'lucide-react']
         }
       }
     }
