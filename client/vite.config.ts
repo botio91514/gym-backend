@@ -1,35 +1,40 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  define: {
-    'process.env': process.env
-  },
-  optimizeDeps: {
-    exclude: ['lucide-react'],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
   },
   build: {
+    outDir: 'dist',
+    sourcemap: true,
     rollupOptions: {
-      external: ['date-fns'],
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom'],
-          datefns: ['date-fns'],
-          icons: ['lucide-react']
-        }
-      }
-    }
+          icons: ['lucide-react'],
+        },
+      },
+    },
   },
   server: {
-    port: 5173,
+    port: 3000,
     proxy: {
       '/api': {
-        target: 'https://backend-na54.onrender.com',
+        target: 'http://localhost:5000',
         changeOrigin: true,
-        secure: false
-      }
-    }
-  }
+      },
+    },
+  },
+  define: {
+    'process.env': process.env,
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', 'lucide-react'],
+  },
 });
