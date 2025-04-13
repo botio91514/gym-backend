@@ -14,14 +14,22 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true,
     rollupOptions: {
+      external: ['react', 'react-dom', 'react-router-dom', 'lucide-react', 'react-hot-toast'],
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom'],
           icons: ['lucide-react'],
           toast: ['react-hot-toast'],
         },
-      },
-    },
+        globals: {
+          'react': 'React',
+          'react-dom': 'ReactDOM',
+          'react-router-dom': 'ReactRouterDOM',
+          'lucide-react': 'LucideReact',
+          'react-hot-toast': 'HotToast'
+        }
+      }
+    }
   },
   server: {
     port: 3000,
@@ -37,5 +45,6 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', 'lucide-react', 'react-hot-toast'],
+    exclude: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-label', '@radix-ui/react-slot', '@radix-ui/react-toast']
   },
 });
