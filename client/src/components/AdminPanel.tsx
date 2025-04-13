@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Calendar, CreditCard, CheckCircle, Eye, Edit, Trash, Bell, Wallet, CreditCard as OnlineIcon } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { API_BASE_URL } from '../App';
+import { API_BASE_URL } from '../config';
 
 interface User {
   _id: string;

@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { addMonths } from 'date-fns';
-import { Camera, Loader2, User, Mail, Phone, Calendar, CreditCard, AlertCircle, X } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL, API_ENDPOINTS } from '../config';
+import { toast } from 'react-hot-toast';
 import axios from 'axios';
+import { addMonths } from 'date-fns';
+import { Camera, Loader2, User, Mail, Phone, Calendar, CreditCard, AlertCircle, X } from 'lucide-react';
 
 interface FormData {
   name: string;

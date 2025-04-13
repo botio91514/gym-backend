@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 import { toast } from 'react-hot-toast';
-import { API_BASE_URL } from '../App';
 import { Loader2, Mail, Lock, AlertCircle } from 'lucide-react';
 
 interface AdminLoginProps {
