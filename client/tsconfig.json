@@ -22,8 +22,11 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+    "types": ["node", "react", "react-dom", "react-router-dom"],
+    "typeRoots": ["./node_modules/@types", "./src/types"]
   },
   "include": ["src"],
+  "exclude": ["node_modules", "dist"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
