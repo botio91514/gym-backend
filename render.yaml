@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: gym-server
+    env: node
+    buildCommand: cd gym-server && npm install
+    startCommand: cd gym-server && npm start
+    envVars:
+      - key: MONGODB_URI
+        fromDatabase:
+          name: gym-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: EMAIL_HOST
+        sync: false
+      - key: EMAIL_PORT
+        sync: false
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASSWORD
+        sync: false
+
+  - type: static
+    name: gym-client
+    buildCommand: npm run build
+    publishPath: client/dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        sync: false 
