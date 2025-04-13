@@ -17,9 +17,8 @@ export default defineConfig({
       external: ['react', 'react-dom', 'react-router-dom', 'lucide-react', 'react-hot-toast'],
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          icons: ['lucide-react'],
-          toast: ['react-hot-toast'],
+          vendor: ['react-router-dom', 'react-hot-toast', 'date-fns', 'lucide-react'],
+          icons: ['lucide-react']
         },
         globals: {
           'react': 'React',
