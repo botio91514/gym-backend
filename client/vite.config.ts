@@ -14,18 +14,10 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true,
     rollupOptions: {
-      external: ['react', 'react-dom', 'react-router-dom', 'lucide-react', 'react-hot-toast'],
       output: {
         manualChunks: {
-          vendor: ['react-router-dom', 'react-hot-toast', 'date-fns', 'lucide-react'],
+          vendor: ['react-hot-toast', 'date-fns', 'lucide-react'],
           icons: ['lucide-react']
-        },
-        globals: {
-          'react': 'React',
-          'react-dom': 'ReactDOM',
-          'react-router-dom': 'ReactRouterDOM',
-          'lucide-react': 'LucideReact',
-          'react-hot-toast': 'HotToast'
         }
       }
     }
