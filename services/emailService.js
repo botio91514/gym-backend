@@ -1,36 +1,89 @@
 const nodemailer = require('nodemailer');
 const { formatIndianPrice, getPlanAmount, getPlanDisplayName } = require('../utils/formatters');
 
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: process.env.EMAIL_PORT,
-  secure: true, // Use SSL/TLS
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD
-  },
-  tls: {
-    // Do not fail on invalid certs
-    rejectUnauthorized: false
-  },
-  debug: true, // Enable debug logs
-  logger: true  // Enable logger
-});
-
-// Verify transporter configuration
-transporter.verify(function(error, success) {
-  if (error) {
-    console.error('SMTP Connection Error:', error);
-    console.error('SMTP Settings:', {
-      host: process.env.EMAIL_HOST,
-      port: process.env.EMAIL_PORT,
-      user: process.env.EMAIL_USER,
-      secure: true
+// Create reusable transporter object using SMTP transport
+const createTransporter = async () => {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',  // Using Gmail service instead of custom SMTP
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD
+      },
+      debug: true,
+      logger: true
     });
-  } else {
-    console.log('SMTP Server is ready to send emails');
+
+    // Verify connection configuration
+    await transporter.verify();
+    console.log('SMTP connection verified successfully');
+    return transporter;
+  } catch (error) {
+    console.error('Failed to create email transporter:', error);
+    throw error;
   }
-});
+};
+
+// Send email function with retries
+const sendEmail = async (options) => {
+  let attempts = 0;
+  const maxAttempts = 3;
+
+  while (attempts < maxAttempts) {
+    try {
+      attempts++;
+      console.log(`Attempt ${attempts} to send email to: ${options.email}`);
+      
+      const transporter = await createTransporter();
+      
+      const mailOptions = {
+        from: {
+          name: 'Gym Test',
+          address: process.env.EMAIL_USER
+        },
+        to: options.email,
+        subject: options.subject,
+        html: options.html,
+        headers: {
+          'X-Priority': '1',
+          'Importance': 'high'
+        }
+      };
+
+      console.log('Sending email with options:', {
+        to: mailOptions.to,
+        subject: mailOptions.subject,
+        from: mailOptions.from
+      });
+
+      const info = await transporter.sendMail(mailOptions);
+      
+      console.log('Email sent successfully:', {
+        messageId: info.messageId,
+        response: info.response,
+        accepted: info.accepted,
+        rejected: info.rejected
+      });
+      
+      return info;
+    } catch (error) {
+      console.error(`Attempt ${attempts} failed:`, {
+        error: error.message,
+        code: error.code,
+        command: error.command,
+        response: error.response,
+        stack: error.stack
+      });
+
+      if (attempts === maxAttempts) {
+        throw new Error(`Failed to send email after ${maxAttempts} attempts: ${error.message}`);
+      }
+
+      // Wait before retrying
+      await new Promise(resolve => setTimeout(resolve, 1000 * attempts));
+    }
+  }
+};
 
 // Template for registration confirmation
 const createRegistrationEmail = (user) => {
@@ -192,56 +245,6 @@ const createPaymentConfirmationEmail = (user, receiptUrl) => {
     </body>
     </html>
   `;
-};
-
-const sendEmail = async (options) => {
-  try {
-    console.log('Attempting to send email to:', options.email);
-    console.log('Using SMTP settings:', {
-      host: process.env.EMAIL_HOST,
-      port: process.env.EMAIL_PORT,
-      user: process.env.EMAIL_USER
-    });
-
-    const mailOptions = {
-      from: {
-        name: 'Gym Test',
-        address: process.env.EMAIL_USER
-      },
-      to: options.email,
-      subject: options.subject,
-      html: options.customEmail || options.html,
-      headers: {
-        'X-Mailer': 'Gym Management System',
-        'X-Priority': '1',
-        'Importance': 'high'
-      }
-    };
-
-    console.log('Mail options:', {
-      to: mailOptions.to,
-      subject: mailOptions.subject,
-      from: mailOptions.from
-    });
-
-    const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent successfully:', {
-      messageId: info.messageId,
-      response: info.response,
-      accepted: info.accepted,
-      rejected: info.rejected
-    });
-    return info;
-  } catch (error) {
-    console.error('Email sending failed:', {
-      error: error.message,
-      code: error.code,
-      command: error.command,
-      response: error.response,
-      stack: error.stack
-    });
-    throw new Error(`Failed to send email: ${error.message}`);
-  }
 };
 
 // Export all functions in a single object
