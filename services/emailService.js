@@ -36,18 +36,18 @@ const createRegistrationEmail = (user) => {
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Welcome to Star Fitness</title>
+      <title>Welcome to Gym Test</title>
     </head>
     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8f8f8; padding: 20px;">
       <div style="background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #333; margin: 0;">Welcome to Star Fitness! 💪</h1>
+          <h1 style="color: #333; margin: 0;">Welcome to Gym Test! 💪</h1>
           <p style="color: #666; margin-top: 10px;">Your Journey to a Healthier Life Begins Here</p>
         </div>
 
         <div style="margin-bottom: 30px;">
           <p style="color: #444; font-size: 16px;">Dear ${user.name},</p>
-          <p style="color: #444; line-height: 1.5;">Thank you for choosing Star Fitness! We're thrilled to have you join our fitness family. Your registration has been successfully received and is currently pending approval.</p>
+          <p style="color: #444; line-height: 1.5;">Thank you for choosing Gym Test! We're thrilled to have you join our fitness family. Your registration has been successfully received and is currently pending approval.</p>
         </div>
 
         <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
@@ -114,18 +114,18 @@ const createPaymentConfirmationEmail = (user, receiptUrl) => {
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Payment Confirmation - Star Fitness</title>
+      <title>Payment Confirmation - Gym Test</title>
     </head>
     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8f8f8; padding: 20px;">
       <div style="background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #333; margin: 0;">Payment Confirmed! 🎉</h1>
-          <p style="color: #666; margin-top: 10px;">Your Star Fitness Membership is Now Active</p>
+          <p style="color: #666; margin-top: 10px;">Your Gym Test Membership is Now Active</p>
         </div>
 
         <div style="margin-bottom: 30px;">
           <p style="color: #444; font-size: 16px;">Dear ${user.name},</p>
-          <p style="color: #444; line-height: 1.5;">Fantastic news! Your payment has been confirmed and your membership is now active. Welcome to the Star Fitness family!</p>
+          <p style="color: #444; line-height: 1.5;">Fantastic news! Your payment has been confirmed and your membership is now active. Welcome to the Gym Test family!</p>
         </div>
 
         <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 30px;">

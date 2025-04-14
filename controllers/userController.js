@@ -60,14 +60,8 @@ exports.register = async (req, res) => {
     // Send registration confirmation email
     await sendEmail({
       email: user.email,
-      subject: 'Registration Confirmation',
-      template: 'registration',
-      data: {
-        name: user.name,
-        plan: user.plan,
-        startDate: new Date(user.startDate).toLocaleDateString(),
-        endDate: new Date(user.endDate).toLocaleDateString()
-      }
+      subject: 'Welcome to Gym Test - Registration Confirmation',
+      html: createRegistrationEmail(user)
     });
 
     res.status(201).json({
