@@ -12,13 +12,21 @@ const transporter = nodemailer.createTransport({
   tls: {
     // Do not fail on invalid certs
     rejectUnauthorized: false
-  }
+  },
+  debug: true, // Enable debug logs
+  logger: true  // Enable logger
 });
 
 // Verify transporter configuration
 transporter.verify(function(error, success) {
   if (error) {
     console.error('SMTP Connection Error:', error);
+    console.error('SMTP Settings:', {
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
+      user: process.env.EMAIL_USER,
+      secure: true
+    });
   } else {
     console.log('SMTP Server is ready to send emails');
   }
@@ -197,7 +205,7 @@ const sendEmail = async (options) => {
 
     const mailOptions = {
       from: {
-        name: 'Gym Management',
+        name: 'Gym Test',
         address: process.env.EMAIL_USER
       },
       to: options.email,
@@ -210,15 +218,27 @@ const sendEmail = async (options) => {
       }
     };
 
+    console.log('Mail options:', {
+      to: mailOptions.to,
+      subject: mailOptions.subject,
+      from: mailOptions.from
+    });
+
     const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent successfully:', info.messageId);
+    console.log('Email sent successfully:', {
+      messageId: info.messageId,
+      response: info.response,
+      accepted: info.accepted,
+      rejected: info.rejected
+    });
     return info;
   } catch (error) {
     console.error('Email sending failed:', {
       error: error.message,
       code: error.code,
       command: error.command,
-      response: error.response
+      response: error.response,
+      stack: error.stack
     });
     throw new Error(`Failed to send email: ${error.message}`);
   }
