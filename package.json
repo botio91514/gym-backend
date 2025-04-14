@@ -1,0 +1,11 @@
+{
+  "name": "gym-management",
+  "version": "1.0.0",
+  "main": "gym-server/server.js",
+  "scripts": {
+    "start": "cd gym-server && npm install && npm start"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
