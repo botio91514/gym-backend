@@ -84,7 +84,7 @@ const createRegistrationEmail = (user) => {
         <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
           <p style="color: #666; margin-bottom: 5px;">Need help? Contact us:</p>
           <p style="color: #666; margin: 0;">📞 Phone: 9662468784</p>
-          <p style="color: #666; margin: 5px 0;">📧 Email: stargym0205@gmail.com</p>
+          <p style="color: #666; margin: 5px 0;">📧 Email: dudeseriouslyjunior@gmail.com</p>
         </div>
       </div>
     </body>
@@ -157,7 +157,7 @@ const createPaymentConfirmationEmail = (user, receiptUrl) => {
         <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
           <p style="color: #666; margin-bottom: 5px;">Need help? Contact us:</p>
           <p style="color: #666; margin: 0;">📞 Phone: 9662468784</p>
-          <p style="color: #666; margin: 5px 0;">📧 Email: stargym0205@gmail.com</p>
+          <p style="color: #666; margin: 5px 0;">📧 Email: dudeseriouslyjunior@gmail.com</p>
         </div>
       </div>
     </body>
@@ -176,14 +176,14 @@ const sendEmail = async (options) => {
 
     const mailOptions = {
       from: {
-        name: 'Gym',
+        name: 'Gym Management',
         address: process.env.EMAIL_USER
       },
       to: options.email,
       subject: options.subject,
       html: options.customEmail || options.html,
       headers: {
-        'X-Mailer': 'Gym Mailer',
+        'X-Mailer': 'Gym Management System',
         'X-Priority': '1',
         'Importance': 'high'
       }
