@@ -36,22 +36,22 @@ const createRegistrationEmail = (user) => {
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Welcome to Gym</title>
+      <title>Welcome to Star Fitness</title>
     </head>
     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8f8f8; padding: 20px;">
       <div style="background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #333; margin: 0;">Welcome to Gym! 💪</h1>
-          <p style="color: #666; margin-top: 10px;">Your fitness journey begins here</p>
+          <h1 style="color: #333; margin: 0;">Welcome to Star Fitness! 💪</h1>
+          <p style="color: #666; margin-top: 10px;">Your Journey to a Healthier Life Begins Here</p>
         </div>
 
         <div style="margin-bottom: 30px;">
           <p style="color: #444; font-size: 16px;">Dear ${user.name},</p>
-          <p style="color: #444; line-height: 1.5;">Thank you for registering with Gym! We're excited to have you join our fitness family. Your registration has been successfully received and is pending approval.</p>
+          <p style="color: #444; line-height: 1.5;">Thank you for choosing Star Fitness! We're thrilled to have you join our fitness family. Your registration has been successfully received and is currently pending approval.</p>
         </div>
 
         <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-          <h2 style="color: #333; margin-top: 0; font-size: 18px;">Membership Details</h2>
+          <h2 style="color: #333; margin-top: 0; font-size: 18px;">Your Membership Details</h2>
           <table style="width: 100%; border-collapse: collapse;">
             <tr>
               <td style="padding: 8px 0; color: #666;">Plan Selected:</td>
@@ -77,14 +77,24 @@ const createRegistrationEmail = (user) => {
         </div>
 
         <div style="background-color: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 30px;">
-          <p style="color: #f57c00; margin: 0;">⚠️ Important Note:</p>
-          <p style="color: #666; margin: 10px 0 0 0;">Your membership will be activated once the payment is confirmed by our admin team.</p>
+          <p style="color: #f57c00; margin: 0;">⚠️ Important Information:</p>
+          <p style="color: #666; margin: 10px 0 0 0;">Your membership will be activated once the payment is confirmed. Please visit our gym with the payment to complete your registration.</p>
+        </div>
+
+        <div style="background-color: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 30px;">
+          <p style="color: #1976d2; margin: 0;">🕒 Gym Timings:</p>
+          <ul style="color: #666; margin: 10px 0 0 0; padding-left: 20px;">
+            <li>Morning: 6:00 AM - 11:00 AM</li>
+            <li>Evening: 4:00 PM - 10:00 PM</li>
+            <li>Sunday: Closed</li>
+          </ul>
         </div>
 
         <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-          <p style="color: #666; margin-bottom: 5px;">Need help? Contact us:</p>
-          <p style="color: #666; margin: 0;">📞 Phone: 9662468784</p>
+          <p style="color: #666; margin-bottom: 5px;">Need assistance? Contact us:</p>
+          <p style="color: #666; margin: 0;">📞 Phone: 9662460000</p>
           <p style="color: #666; margin: 5px 0;">📧 Email: dudeseriouslyjunior@gmail.com</p>
+          <p style="color: #666; margin: 5px 0;">📍 Location: Petlad, Gujarat</p>
         </div>
       </div>
     </body>
@@ -104,18 +114,18 @@ const createPaymentConfirmationEmail = (user, receiptUrl) => {
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Payment Confirmation - Gym</title>
+      <title>Payment Confirmation - Star Fitness</title>
     </head>
     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8f8f8; padding: 20px;">
       <div style="background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #333; margin: 0;">Payment Confirmed! 🎉</h1>
-          <p style="color: #666; margin-top: 10px;">Your Gym membership is now active</p>
+          <p style="color: #666; margin-top: 10px;">Your Star Fitness Membership is Now Active</p>
         </div>
 
         <div style="margin-bottom: 30px;">
           <p style="color: #444; font-size: 16px;">Dear ${user.name},</p>
-          <p style="color: #444; line-height: 1.5;">Great news! Your payment has been confirmed and your membership is now active. Welcome to the Gym family!</p>
+          <p style="color: #444; line-height: 1.5;">Fantastic news! Your payment has been confirmed and your membership is now active. Welcome to the Star Fitness family!</p>
         </div>
 
         <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
@@ -147,17 +157,28 @@ const createPaymentConfirmationEmail = (user, receiptUrl) => {
         <div style="background-color: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 30px;">
           <p style="color: #2e7d32; margin: 0;">✨ Getting Started:</p>
           <ul style="color: #666; margin: 10px 0 0 0; padding-left: 20px;">
-            <li>Visit our gym during operational hours</li>
+            <li>Visit during operational hours</li>
             <li>Bring your ID for first-time check-in</li>
+            <li>Get your complimentary fitness assessment</li>
             <li>Join our orientation session</li>
-            <li>Download our mobile app for schedules</li>
+            <li>Follow our social media for updates and tips</li>
+          </ul>
+        </div>
+
+        <div style="background-color: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 30px;">
+          <p style="color: #1976d2; margin: 0;">🕒 Gym Timings:</p>
+          <ul style="color: #666; margin: 10px 0 0 0; padding-left: 20px;">
+            <li>Morning: 6:00 AM - 11:00 AM</li>
+            <li>Evening: 4:00 PM - 10:00 PM</li>
+            <li>Sunday: Closed</li>
           </ul>
         </div>
 
         <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-          <p style="color: #666; margin-bottom: 5px;">Need help? Contact us:</p>
-          <p style="color: #666; margin: 0;">📞 Phone: 9662468784</p>
+          <p style="color: #666; margin-bottom: 5px;">Need assistance? Contact us:</p>
+          <p style="color: #666; margin: 0;">📞 Phone: 9662460000</p>
           <p style="color: #666; margin: 5px 0;">📧 Email: dudeseriouslyjunior@gmail.com</p>
+          <p style="color: #666; margin: 5px 0;">📍 Location: Petlad, Gujarat</p>
         </div>
       </div>
     </body>
