@@ -14,9 +14,9 @@ router.use(protect); // Apply authentication middleware to all routes below
 
 // Admin only routes
 router.get('/', userController.getAllUsers);
-router.patch('/approve/:userId', protect, userController.approvePayment);
-router.patch('/:id', protect, userController.updateUser);
-router.delete('/:id', protect, userController.deleteUser);
-router.post('/notify-expired/:userId', protect, userController.notifyExpiredMember);
+router.patch('/approve/:userId', userController.approvePayment);
+router.patch('/:id', userController.updateUser);
+router.delete('/:id', userController.deleteUser);
+router.post('/notify-expired/:userId', userController.notifyExpiredMember);
 
 module.exports = router;
