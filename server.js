@@ -7,20 +7,13 @@ const corsOptions = {
       'https://gym91514.netlify.app',
       'https://backend-3xq0.onrender.com'
     ];
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
+    callback(null, true); // Allow all origins temporarily for debugging
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   exposedHeaders: ['Content-Range', 'X-Content-Range'],
-  maxAge: 86400, // 24 hours
-  preflightContinue: false,
-  optionsSuccessStatus: 204
+  maxAge: 86400 // 24 hours
 };
 
 // Apply CORS middleware first, before any other middleware
@@ -29,33 +22,45 @@ app.use(cors(corsOptions));
 // Add cookie-parser middleware
 app.use(cookieParser());
 
-// Increase request timeout
+// Configure server timeouts
 app.use((req, res, next) => {
-  // Set timeout to 30 seconds
-  req.setTimeout(30000);
-  res.setTimeout(30000);
+  // Increase timeout to 60 seconds
+  req.setTimeout(60000);
+  res.setTimeout(60000);
+
+  // Handle request timeout
+  req.on('timeout', () => {
+    console.error('Request has timed out');
+    res.status(408).json({ 
+      status: 'error',
+      message: 'Request timeout' 
+    });
+  });
+
+  // Handle response timeout
+  res.on('timeout', () => {
+    console.error('Response has timed out');
+    res.status(503).json({ 
+      status: 'error',
+      message: 'Service temporarily unavailable' 
+    });
+  });
+
   next();
 });
 
 // Add headers for all responses
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  const allowedOrigins = [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'https://gym91514.netlify.app',
-    'https://backend-3xq0.onrender.com'
-  ];
-  
-  if (origin && allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-  } else {
-    res.header('Access-Control-Allow-Origin', 'https://gym91514.netlify.app');
-  }
-  
+  res.header('Access-Control-Allow-Origin', '*'); // Allow all origins temporarily for debugging
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Max-Age', '86400'); // 24 hours
+
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   next();
 }); 
