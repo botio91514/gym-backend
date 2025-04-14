@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { addMonths } from 'date-fns';
-import { Camera, Loader2, User, Mail, Phone, Calendar, CreditCard, AlertCircle, X } from 'lucide-react';
+import { Loader2, User, Mail, Phone, Calendar, CreditCard, AlertCircle, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../App';
@@ -10,12 +10,11 @@ interface FormData {
   email: string;
   phone: string;
   dob: string;
-  photo: File | null;
   plan: '1month' | '2month' | '3month' | '6month' | 'yearly';
   startDate: string;
   endDate: string;
   paymentMethod: 'cash' | 'online';
-  [key: string]: string | File | null;
+  [key: string]: string;
 }
 
 interface FormErrors {
@@ -23,7 +22,6 @@ interface FormErrors {
   email?: string;
   phone?: string;
   dob?: string;
-  photo?: string;
   [key: string]: string | undefined;
 }
 
@@ -74,7 +72,6 @@ const RegistrationForm: React.FC = () => {
     email: '',
     phone: '',
     dob: '',
-    photo: null,
     plan: '1month',
     startDate: new Date().toISOString().split('T')[0],
     endDate: addMonths(new Date(), 1).toISOString().split('T')[0],
@@ -82,7 +79,6 @@ const RegistrationForm: React.FC = () => {
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
-  const [photoPreview, setPhotoPreview] = useState<string>('');
   const [selectedPlan, setSelectedPlan] = useState<'1month' | '2month' | '3month' | '6month' | 'yearly'>('1month');
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
@@ -122,22 +118,6 @@ const RegistrationForm: React.FC = () => {
     const timer = setTimeout(checkEmail, 500);
     return () => clearTimeout(timer);
   }, [formData.email]);
-
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) { // 2MB limit
-        toast.error('Photo size should be less than 2MB');
-        return;
-      }
-      setFormData({ ...formData, photo: file });
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const handlePlanSelect = (plan: PlanOption) => {
     const startDate = new Date();
@@ -191,12 +171,6 @@ const RegistrationForm: React.FC = () => {
       isValid = false;
     }
 
-    // Photo validation (optional)
-    if (!formData.photo) {
-      newErrors.photo = 'Please upload a photo';
-      isValid = false;
-    }
-
     setErrors(newErrors);
     return isValid;
   };
@@ -204,13 +178,11 @@ const RegistrationForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate form before submission
     if (!validateForm()) {
       toast.error('Please fix the errors in the form');
       return;
     }
 
-    // Check if email exists before submission
     if (emailExists) {
       toast.error('This email is already registered. Please use a different email.');
       return;
@@ -219,26 +191,18 @@ const RegistrationForm: React.FC = () => {
     setIsLoading(true);
     
     try {
-      const formDataToSend = new FormData();
-      
-      // Add all form fields to FormData
-      Object.keys(formData).forEach(key => {
-        if (key === 'photo' && formData[key] instanceof File) {
-          formDataToSend.append('photo', formData[key] as File);
-        } else {
-          formDataToSend.append(key, String(formData[key]));
-        }
-      });
-
       const response = await fetch(`${API_BASE_URL}/api/users/register`, {
         method: 'POST',
-        body: formDataToSend,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
       });
 
       const errorData = await response.json();
       
       if (!response.ok) {
-        console.log('Registration error:', errorData); // Debug log
+        console.log('Registration error:', errorData);
         
         if (response.status === 400) {
           if (errorData.message?.includes('email')) {
@@ -251,28 +215,21 @@ const RegistrationForm: React.FC = () => {
             toast.error('This phone number is already registered. Please use a different phone number.');
             throw new Error('Phone number already exists');
           } else {
-            // Handle generic 400 error
             toast.error(errorData.message || 'Registration failed. Please check your information.');
             throw new Error(errorData.message || 'Registration failed');
           }
         } else {
-          // Handle other error status codes
           toast.error(errorData.message || 'Registration failed. Please try again.');
           throw new Error(errorData.message || 'Registration failed');
         }
       }
 
-      // If registration is successful
       toast.success('Registration successful! Please check your email.');
       navigate('/thank-you');
     } catch (error) {
       console.error('Error during registration:', error);
       if (error instanceof Error) {
-        if (error.message.includes('Email already exists')) {
-          // Error already handled above with toast
-        } else if (error.message.includes('Phone number already exists')) {
-          // Error already handled above with toast
-        } else {
+        if (!error.message.includes('already exists')) {
           toast.error('Registration failed. Please check your information and try again.');
         }
       } else {
@@ -461,47 +418,6 @@ const RegistrationForm: React.FC = () => {
                   </p>
                 )}
               </div>
-            </div>
-          </div>
-
-          {/* Photo Upload Section */}
-          <div className="space-y-4 sm:space-y-6">
-            <h3 className="text-lg sm:text-xl font-semibold text-white mb-4 sm:mb-6 flex items-center">
-              <Camera className="mr-2 text-yellow-500" size={20} />
-              Profile Photo
-            </h3>
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-2 border-gray-600">
-                {photoPreview ? (
-                  <img
-                    src={photoPreview}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gray-700 flex items-center justify-center">
-                    <Camera className="text-gray-400" size={24} />
-                  </div>
-                )}
-              </div>
-              <label className="cursor-pointer">
-                <span className="px-4 sm:px-6 py-2 sm:py-3 bg-yellow-500 text-black rounded-lg hover:bg-yellow-400 transition-colors inline-flex items-center">
-                  <Camera className="mr-2" size={16} />
-                  Upload Photo
-                </span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handlePhotoChange}
-                  className="hidden"
-                />
-              </label>
-              {errors.photo && (
-                <p className="text-red-500 text-sm flex items-center">
-                  <AlertCircle className="mr-1" size={14} />
-                  {errors.photo}
-                </p>
-              )}
             </div>
           </div>
 

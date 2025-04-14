@@ -4,8 +4,11 @@ const userController = require('../controllers/userController');
 const { protect } = require('../middleware/auth');
 const { upload, handleUploadError } = require('../middleware/upload');
 
-// Public route
-router.post('/register', upload.single('photo'), handleUploadError, userController.register);
+// User registration route
+router.post('/register', userController.register);
+
+// Check email availability
+router.get('/check-email', userController.checkEmail);
 
 // Protected routes - require authentication
 router.use(protect); // Apply authentication middleware to all routes below
