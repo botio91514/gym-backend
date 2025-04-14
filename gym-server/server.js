@@ -13,38 +13,31 @@ const sendEmail = require('./services/emailService');
 const { checkExpiredSubscriptions } = require('./services/subscriptionService');
 const healthRoutes = require('./routes/healthRoutes');
 
+// Initialize express app
 const app = express();
+
+// Middleware setup
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(morgan('dev'));
+app.use(cookieParser());
 
 // CORS configuration
 const corsOptions = {
-  origin: ['http://localhost:5173', 'http://localhost:3000', 'https://gym-frontend-hz0n.onrender.com', 'https://starfitnesspetlad.netlify.app'],
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://gym91514.netlify.app'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   exposedHeaders: ['Content-Range', 'X-Content-Range'],
-  maxAge: 600,
-  preflightContinue: false,
-  optionsSuccessStatus: 204
+  maxAge: 600
 };
 
 // Apply CORS middleware
 app.use(cors(corsOptions));
-
-// Add cookie-parser middleware
-app.use(cookieParser());
-
-// Add headers for all responses
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin || 'https://starfitnesspetlad.netlify.app');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  next();
-});
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(morgan('dev'));
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, 'public/uploads');
@@ -108,7 +101,7 @@ app.use('/receipts', (req, res, next) => {
   if (fs.existsSync(filePath)) {
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${path.basename(filePath)}"`);
-    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || 'https://starfitnesspetlad.netlify.app');
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || 'https://gym91514.netlify.app');
     res.setHeader('Access-Control-Allow-Methods', 'GET');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -184,45 +177,3 @@ process.on('unhandledRejection', (err) => {
   console.log(err.name, err.message);
   process.exit(1);
 });
-
-exports.register = async (req, res) => {
-  try {
-    const { name, email, phone } = req.body;
-    const errors = [];
-
-    if (!name) errors.push('Name is required.');
-    if (!email || !/\S+@\S+\.\S+/.test(email)) errors.push('Valid email is required.');
-    if (!phone || !/^\d{10}$/.test(phone)) errors.push('Valid phone number is required.');
-
-    if (errors.length > 0) {
-      return res.status(400).json({ status: 'error', message: errors });
-    }
-
-    // ... existing registration logic ...
-  } catch (error) {
-    res.status(500).json({ status: 'error', message: 'An error occurred during registration' });
-  }
-};
-
-exports.getAllUsers = async (req, res) => {
-  try {
-    const users = await User.find();
-    const processedUsers = users.map(user => {
-      const userObj = user.toObject();
-      console.log('Processed photo path:', userObj.photo);
-      return userObj;
-    });
-    res.status(200).json({
-      status: 'success',
-      data: {
-        users: processedUsers
-      }
-    });
-  } catch (error) {
-    console.error('Error fetching users:', error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Error fetching users'
-    });
-  }
-};
