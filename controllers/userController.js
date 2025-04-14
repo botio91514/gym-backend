@@ -437,3 +437,32 @@ exports.notifyExpiredMember = async (req, res) => {
     });
   }
 };
+
+// Check email availability
+exports.checkEmail = async (req, res) => {
+  try {
+    const { email } = req.query;
+    
+    if (!email) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Email is required'
+      });
+    }
+
+    const existingUser = await User.findOne({ email });
+    
+    res.status(200).json({
+      status: 'success',
+      data: {
+        exists: !!existingUser
+      }
+    });
+  } catch (error) {
+    console.error('Error checking email:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Error checking email availability'
+    });
+  }
+};
