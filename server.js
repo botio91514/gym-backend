@@ -13,7 +13,14 @@ const sendEmail = require('./services/emailService');
 const { checkExpiredSubscriptions } = require('./services/subscriptionService');
 const healthRoutes = require('./routes/healthRoutes');
 
+// Initialize express app
 const app = express();
+
+// Middleware setup
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(morgan('dev'));
+app.use(cookieParser());
 
 // CORS configuration
 const corsOptions = {
@@ -31,13 +38,6 @@ const corsOptions = {
 
 // Apply CORS middleware
 app.use(cors(corsOptions));
-
-// Add cookie-parser middleware
-app.use(cookieParser());
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(morgan('dev'));
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, 'public/uploads');

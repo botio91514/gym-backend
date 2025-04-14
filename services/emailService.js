@@ -5,13 +5,24 @@ const { formatIndianPrice, getPlanAmount, getPlanDisplayName } = require('../uti
 const createTransporter = async () => {
   try {
     const transporter = nodemailer.createTransport({
-      service: 'gmail',  // Using Gmail service instead of custom SMTP
+      service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASSWORD
       },
-      debug: true,
-      logger: true
+      pool: true,
+      maxConnections: 1,
+      rateDelta: 1500, // Increased delay between messages
+      rateLimit: 3,
+      secure: true,
+      tls: {
+        rejectUnauthorized: true
+      },
+      dkim: {
+        domainName: 'gmail.com',
+        keySelector: 'default',
+        privateKey: process.env.DKIM_PRIVATE_KEY
+      }
     });
 
     // Verify connection configuration
@@ -38,49 +49,38 @@ const sendEmail = async (options) => {
       
       const mailOptions = {
         from: {
-          name: 'Gym Test',
+          name: 'Gym Test Fitness Center',
           address: process.env.EMAIL_USER
         },
         to: options.email,
         subject: options.subject,
         html: options.html,
         headers: {
-          'X-Priority': '1',
-          'Importance': 'high'
+          'List-Unsubscribe': `<mailto:${process.env.EMAIL_USER}?subject=unsubscribe>`,
+          'Feedback-ID': 'Gym-Test:registration:gmail',
+          'X-Entity-Ref-ID': new Date().getTime().toString(),
+          'X-Report-Abuse': `Please report abuse here: mailto:${process.env.EMAIL_USER}`,
+          'X-Auto-Response-Suppress': 'OOF, AutoReply',
+          'Precedence': 'bulk',
+          'X-Mailer': 'GymTest Mailer v1.0.0'
+        },
+        priority: 'high',
+        encoding: 'utf-8',
+        dsn: {
+          id: true,
+          return: 'headers',
+          notify: ['failure', 'delay'],
+          recipient: process.env.EMAIL_USER
         }
       };
 
-      console.log('Sending email with options:', {
-        to: mailOptions.to,
-        subject: mailOptions.subject,
-        from: mailOptions.from
-      });
-
       const info = await transporter.sendMail(mailOptions);
-      
-      console.log('Email sent successfully:', {
-        messageId: info.messageId,
-        response: info.response,
-        accepted: info.accepted,
-        rejected: info.rejected
-      });
-      
+      console.log('Email sent successfully:', info.messageId);
       return info;
     } catch (error) {
-      console.error(`Attempt ${attempts} failed:`, {
-        error: error.message,
-        code: error.code,
-        command: error.command,
-        response: error.response,
-        stack: error.stack
-      });
-
-      if (attempts === maxAttempts) {
-        throw new Error(`Failed to send email after ${maxAttempts} attempts: ${error.message}`);
-      }
-
-      // Wait before retrying
-      await new Promise(resolve => setTimeout(resolve, 1000 * attempts));
+      console.error(`Attempt ${attempts} failed:`, error);
+      if (attempts === maxAttempts) throw error;
+      await new Promise(resolve => setTimeout(resolve, 2000 * Math.pow(2, attempts)));
     }
   }
 };
@@ -93,69 +93,95 @@ const createRegistrationEmail = (user) => {
 
   return `
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Welcome to Gym Test</title>
+      <meta name="color-scheme" content="light">
+      <meta name="supported-color-schemes" content="light">
+      <title>Welcome to Gym Test Fitness Center</title>
     </head>
-    <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8f8f8; padding: 20px;">
-      <div style="background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #333; margin: 0;">Welcome to Gym Test! 💪</h1>
-          <p style="color: #666; margin-top: 10px;">Your Journey to a Healthier Life Begins Here</p>
+    <body style="margin: 0; padding: 0; background-color: #f8f9fa;">
+      <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; font-family: 'Segoe UI', Arial, sans-serif;">
+        <!-- Header -->
+        <div style="background-color: #212529; padding: 30px 20px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600;">Gym Test Fitness Center</h1>
+          <p style="color: #e9ecef; margin-top: 10px; font-size: 16px;">Your Journey to Fitness Begins Here</p>
         </div>
 
-        <div style="margin-bottom: 30px;">
-          <p style="color: #444; font-size: 16px;">Dear ${user.name},</p>
-          <p style="color: #444; line-height: 1.5;">Thank you for choosing Gym Test! We're thrilled to have you join our fitness family. Your registration has been successfully received and is currently pending approval.</p>
+        <!-- Main Content -->
+        <div style="padding: 40px 30px;">
+          <h2 style="color: #212529; margin: 0 0 20px; font-size: 24px;">Registration Confirmation</h2>
+          <p style="color: #495057; line-height: 1.6; margin-bottom: 25px;">Dear ${user.name},</p>
+          <p style="color: #495057; line-height: 1.6; margin-bottom: 25px;">Thank you for choosing Gym Test Fitness Center. We're excited to welcome you to our fitness family. Your registration has been received and is currently pending approval.</p>
+
+          <!-- Membership Card -->
+          <div style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); border-radius: 12px; padding: 25px; color: white; margin-bottom: 30px;">
+            <h3 style="margin: 0 0 15px; font-size: 20px;">Membership Details</h3>
+            <div style="background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 8px;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 8px 0; color: #e9ecef;">Plan:</td>
+                  <td style="padding: 8px 0; color: white; font-weight: 500; text-align: right;">${planName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #e9ecef;">Amount:</td>
+                  <td style="padding: 8px 0; color: white; font-weight: 500; text-align: right;">${formattedAmount}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #e9ecef;">Start Date:</td>
+                  <td style="padding: 8px 0; color: white; font-weight: 500; text-align: right;">${new Date(user.startDate).toLocaleDateString('en-IN')}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #e9ecef;">End Date:</td>
+                  <td style="padding: 8px 0; color: white; font-weight: 500; text-align: right;">${new Date(user.endDate).toLocaleDateString('en-IN')}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          <!-- Next Steps -->
+          <div style="background-color: #f8f9fa; border-radius: 12px; padding: 25px; margin-bottom: 30px;">
+            <h3 style="color: #212529; margin: 0 0 15px; font-size: 20px;">Next Steps</h3>
+            <ol style="color: #495057; margin: 0; padding-left: 20px; line-height: 1.8;">
+              <li>Visit our facility during business hours</li>
+              <li>Complete your payment</li>
+              <li>Receive your membership card</li>
+              <li>Schedule your complimentary fitness assessment</li>
+            </ol>
+          </div>
+
+          <!-- Facility Hours -->
+          <div style="background-color: #e9ecef; border-radius: 12px; padding: 25px; margin-bottom: 30px;">
+            <h3 style="color: #212529; margin: 0 0 15px; font-size: 20px;">Facility Hours</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 8px 0; color: #495057;">Morning:</td>
+                <td style="padding: 8px 0; color: #212529; font-weight: 500;">6:00 AM - 11:00 AM</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #495057;">Evening:</td>
+                <td style="padding: 8px 0; color: #212529; font-weight: 500;">4:00 PM - 10:00 PM</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #495057;">Sunday:</td>
+                <td style="padding: 8px 0; color: #212529; font-weight: 500;">Closed</td>
+              </tr>
+            </table>
+          </div>
         </div>
 
-        <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-          <h2 style="color: #333; margin-top: 0; font-size: 18px;">Your Membership Details</h2>
-          <table style="width: 100%; border-collapse: collapse;">
-            <tr>
-              <td style="padding: 8px 0; color: #666;">Plan Selected:</td>
-              <td style="padding: 8px 0; color: #333; font-weight: bold;">${planName}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0; color: #666;">Amount to Pay:</td>
-              <td style="padding: 8px 0; color: #333; font-weight: bold;">${formattedAmount}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0; color: #666;">Start Date:</td>
-              <td style="padding: 8px 0; color: #333; font-weight: bold;">${new Date(user.startDate).toLocaleDateString()}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0; color: #666;">End Date:</td>
-              <td style="padding: 8px 0; color: #333; font-weight: bold;">${new Date(user.endDate).toLocaleDateString()}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0; color: #666;">Payment Status:</td>
-              <td style="padding: 8px 0; color: #ff9800; font-weight: bold;">Pending</td>
-            </tr>
-          </table>
-        </div>
-
-        <div style="background-color: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 30px;">
-          <p style="color: #f57c00; margin: 0;">⚠️ Important Information:</p>
-          <p style="color: #666; margin: 10px 0 0 0;">Your membership will be activated once the payment is confirmed. Please visit our gym with the payment to complete your registration.</p>
-        </div>
-
-        <div style="background-color: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 30px;">
-          <p style="color: #1976d2; margin: 0;">🕒 Gym Timings:</p>
-          <ul style="color: #666; margin: 10px 0 0 0; padding-left: 20px;">
-            <li>Morning: 6:00 AM - 11:00 AM</li>
-            <li>Evening: 4:00 PM - 10:00 PM</li>
-            <li>Sunday: Closed</li>
-          </ul>
-        </div>
-
-        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-          <p style="color: #666; margin-bottom: 5px;">Need assistance? Contact us:</p>
-          <p style="color: #666; margin: 0;">📞 Phone: 9662460000</p>
-          <p style="color: #666; margin: 5px 0;">📧 Email: dudeseriouslyjunior@gmail.com</p>
-          <p style="color: #666; margin: 5px 0;">📍 Location: Petlad, Gujarat</p>
+        <!-- Footer -->
+        <div style="background-color: #212529; color: #ffffff; padding: 30px 20px; text-align: center;">
+          <h3 style="margin: 0 0 20px; font-size: 20px;">Contact Information</h3>
+          <p style="margin: 10px 0; color: #e9ecef;">
+            <span style="display: inline-block; margin-right: 10px;">📞 +91 9662460000</span>
+            <span style="display: inline-block;">📧 dudeseriouslyjunior@gmail.com</span>
+          </p>
+          <p style="margin: 10px 0; color: #e9ecef;">📍 Petlad, Gujarat</p>
+          <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+            <p style="color: #6c757d; font-size: 12px; margin: 0;">This is an automated message. Please do not reply to this email.</p>
+          </div>
         </div>
       </div>
     </body>
