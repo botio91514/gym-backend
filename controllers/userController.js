@@ -8,101 +8,79 @@ const path = require('path');
 
 exports.register = async (req, res) => {
   try {
-    console.log('Registration request received:', req.body);
-    console.log('Uploaded file:', req.file);
-
-    // Validate required fields
-    const requiredFields = ['name', 'email', 'phone', 'dob', 'plan', 'startDate', 'endDate', 'paymentMethod'];
-    const missingFields = requiredFields.filter(field => !req.body[field]);
+    const { name, email, phone, dob, plan, startDate, endDate, paymentMethod } = req.body;
     
-    if (missingFields.length > 0) {
+    // Validate required fields
+    const errors = [];
+    if (!name) errors.push('Name is required');
+    if (!email || !/\S+@\S+\.\S+/.test(email)) errors.push('Valid email is required');
+    if (!phone || !/^\d{10}$/.test(phone)) errors.push('Valid phone number is required');
+    if (!dob) errors.push('Date of birth is required');
+    if (!plan) errors.push('Plan is required');
+    if (!startDate) errors.push('Start date is required');
+    if (!endDate) errors.push('End date is required');
+    if (!paymentMethod) errors.push('Payment method is required');
+
+    if (errors.length > 0) {
+      return res.status(400).json({ status: 'error', message: errors });
+    }
+
+    // Check if user with email already exists
+    const existingUserEmail = await User.findOne({ email });
+    if (existingUserEmail) {
       return res.status(400).json({
         status: 'error',
-        message: `Missing required fields: ${missingFields.join(', ')}`
+        message: 'Email already registered'
       });
     }
 
-    // Handle photo upload
-    let photoPath = null;
-    if (req.file) {
-      photoPath = `/uploads/${req.file.filename}`;
-      console.log('Photo path saved:', photoPath);
+    // Check if user with phone already exists
+    const existingUserPhone = await User.findOne({ phone });
+    if (existingUserPhone) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Phone number already registered'
+      });
     }
 
-    // Format dates
-    const userData = {
-      name: req.body.name,
-      email: req.body.email.toLowerCase(),
-      phone: req.body.phone,
-      dob: new Date(req.body.dob),
-      plan: req.body.plan,
-      startDate: new Date(req.body.startDate),
-      endDate: new Date(req.body.endDate),
-      paymentMethod: req.body.paymentMethod,
+    // Create new user
+    const user = await User.create({
+      name,
+      email,
+      phone,
+      dob,
+      plan,
+      startDate,
+      endDate,
+      paymentMethod,
       paymentStatus: 'pending',
-      photo: photoPath // Add photo path to user data
-    };
+      subscriptionStatus: 'pending'
+    });
 
-    // Validate plan type
-    if (!['1month', '2month', '3month', '6month', 'yearly'].includes(userData.plan)) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Invalid plan type. Must be one of: 1month, 2month, 3month, 6month, yearly'
-      });
-    }
-
-    // Validate payment method
-    if (!['cash', 'online'].includes(userData.paymentMethod)) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Invalid payment method. Must be either cash or online'
-      });
-    }
-
-    console.log('Creating user with data:', userData);
-    const user = new User(userData);
-    await user.save();
-    console.log('User created successfully:', user);
-
-    try {
-      await sendEmail({
-        email: user.email,
-        subject: 'Welcome to Gym - Registration Successful',
-        html: createRegistrationEmail(user)
-      });
-      console.log('Welcome email sent successfully');
-    } catch (emailError) {
-      console.error('Error sending welcome email:', emailError);
-      // Don't fail the registration if email fails
-    }
+    // Send registration confirmation email
+    await sendEmail({
+      email: user.email,
+      subject: 'Registration Confirmation',
+      template: 'registration',
+      data: {
+        name: user.name,
+        plan: user.plan,
+        startDate: new Date(user.startDate).toLocaleDateString(),
+        endDate: new Date(user.endDate).toLocaleDateString()
+      }
+    });
 
     res.status(201).json({
       status: 'success',
-      data: { user }
+      data: {
+        user
+      }
     });
   } catch (error) {
     console.error('Registration error:', error);
-    
-    // Handle duplicate email error
-    if (error.code === 11000) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Email already exists'
-      });
-    }
-
-    // Handle validation errors
-    if (error.name === 'ValidationError') {
-      const messages = Object.values(error.errors).map(err => err.message);
-      return res.status(400).json({
-        status: 'error',
-        message: messages.join(', ')
-      });
-    }
-
     res.status(500).json({
       status: 'error',
-      message: error.message || 'An error occurred during registration'
+      message: 'Error registering user'
     });
   }
 };
@@ -172,48 +150,10 @@ exports.approvePayment = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.find();
-    
-    // Process users to ensure photo URLs are correct
-    const processedUsers = users.map(user => {
-      const userObj = user.toObject();
-      
-      // Handle photo path
-      if (userObj.photo) {
-        // If it's a default photo, keep it as is
-        if (userObj.photo === '/default-avatar.png') {
-          return userObj;
-        }
-        
-        // If it's already a full URL, keep it as is
-        if (userObj.photo.startsWith('http')) {
-          return userObj;
-        }
-        
-        // Ensure the photo path starts with /uploads/
-        if (!userObj.photo.startsWith('/uploads/')) {
-          userObj.photo = `/uploads/${userObj.photo.split('/').pop()}`;
-        }
-        
-        // Add base URL if not present
-        if (!userObj.photo.startsWith('http')) {
-          const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-          userObj.photo = `${baseUrl}${userObj.photo}`;
-        }
-        
-        console.log('Processed photo path:', userObj.photo); // Debug log
-      } else {
-        // Set default photo if no photo is provided
-        const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-        userObj.photo = `${baseUrl}/default-avatar.png`;
-      }
-      
-      return userObj;
-    });
-    
     res.status(200).json({
       status: 'success',
       data: {
-        users: processedUsers
+        users
       }
     });
   } catch (error) {
@@ -284,27 +224,6 @@ exports.deleteUser = async (req, res) => {
         status: 'error',
         message: 'User not found'
       });
-    }
-
-    // Delete user's photo if it exists
-    if (user.photo) {
-      try {
-        // Extract filename from the photo path (in case it's a full URL or relative path)
-        const photoFilename = user.photo.split('/').pop();
-        const photoPath = path.join(__dirname, '..', 'public', 'uploads', photoFilename);
-        
-        console.log('Attempting to delete photo at path:', photoPath);
-        
-        if (fs.existsSync(photoPath)) {
-          fs.unlinkSync(photoPath);
-          console.log('Successfully deleted photo:', photoPath);
-        } else {
-          console.log('Photo file not found at path:', photoPath);
-        }
-      } catch (photoError) {
-        console.error('Error deleting photo:', photoError);
-        // Continue with user deletion even if photo deletion fails
-      }
     }
 
     // Delete user's receipt if it exists

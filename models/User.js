@@ -4,50 +4,51 @@ const validator = require('validator');
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'Please provide a name'],
+    required: [true, 'Please provide your name'],
     trim: true
   },
   email: {
     type: String,
-    required: [true, 'Please provide an email'],
+    required: [true, 'Please provide your email'],
     unique: true,
     lowercase: true
   },
   phone: {
     type: String,
-    required: [true, 'Please provide a phone number']
+    required: [true, 'Please provide your phone number'],
+    unique: true
   },
-  photo: {
-    type: String,
-    default: '/default-avatar.png'
+  dob: {
+    type: Date,
+    required: [true, 'Please provide your date of birth']
   },
   plan: {
     type: String,
-    enum: ['1month', '2month', '3month', '6month', 'yearly'],
-    required: [true, 'Please select a plan']
+    required: [true, 'Please select a plan'],
+    enum: ['1month', '2month', '3month', '6month', 'yearly']
   },
   startDate: {
     type: Date,
-    required: [true, 'Please provide a start date']
+    required: [true, 'Start date is required']
   },
   endDate: {
     type: Date,
-    required: [true, 'Please provide an end date']
+    required: [true, 'End date is required']
   },
   paymentMethod: {
     type: String,
-    enum: ['cash', 'online'],
-    required: true
+    required: [true, 'Payment method is required'],
+    enum: ['cash', 'online']
   },
   paymentStatus: {
     type: String,
-    enum: ['pending', 'confirmed'],
+    enum: ['pending', 'confirmed', 'failed'],
     default: 'pending'
   },
   subscriptionStatus: {
     type: String,
     enum: ['active', 'expired', 'pending'],
-    default: 'active'
+    default: 'pending'
   }
 }, { timestamps: true });
 
