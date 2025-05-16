@@ -3,6 +3,7 @@ const APIError = require('../utils/APIError');
 const { sendEmail, createRegistrationEmail } = require('../services/emailService');
 const { getPlanAmount, getPlanDisplayName, formatIndianPrice } = require('../utils/formatters');
 const { generateReceipt } = require('../services/pdfService');
+const { uploadImage } = require('../services/cloudinaryService');
 const fs = require('fs');
 const path = require('path');
 
@@ -43,6 +44,21 @@ exports.register = async (req, res) => {
       });
     }
 
+    // Handle image upload if present
+    let imageUrl = null;
+    if (req.file) {
+      try {
+        const result = await uploadImage(req.file.buffer);
+        imageUrl = result.secure_url;
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        return res.status(500).json({
+          status: 'error',
+          message: 'Error uploading profile image'
+        });
+      }
+    }
+
     // Create new user
     const user = await User.create({
       name,
@@ -54,7 +70,8 @@ exports.register = async (req, res) => {
       endDate,
       paymentMethod,
       paymentStatus: 'pending',
-      subscriptionStatus: 'pending'
+      subscriptionStatus: 'pending',
+      image: imageUrl
     });
 
     // Send registration confirmation email

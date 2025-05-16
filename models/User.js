@@ -22,6 +22,10 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     required: [true, 'Please provide your date of birth']
   },
+  image: {
+    type: String,
+    default: null
+  },
   plan: {
     type: String,
     required: [true, 'Please select a plan'],

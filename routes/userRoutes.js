@@ -2,9 +2,11 @@ const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
 const { protect } = require('../middleware/auth');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
 
-// User registration route
-router.post('/register', userController.register);
+// User registration route with file upload
+router.post('/register', upload.single('image'), userController.register);
 
 // Check email availability
 router.get('/check-email', userController.checkEmail);
