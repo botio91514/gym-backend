@@ -94,7 +94,7 @@ exports.register = async (req, res) => {
       paymentMethod,
       paymentStatus: 'pending',
       subscriptionStatus: 'pending',
-      image: imageUrl
+      photo: imageUrl
     });
 
     // Send registration confirmation email in the background
