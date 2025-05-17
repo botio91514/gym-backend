@@ -68,17 +68,17 @@ exports.register = async (req, res) => {
           });
         }
 
+        console.log('Attempting to upload image to Cloudinary...');
         const result = await uploadImage(req.file.buffer);
         if (!result || !result.secure_url) {
-          throw new Error('Failed to upload image');
+          throw new Error('Failed to upload image: No secure URL returned');
         }
         imageUrl = result.secure_url;
+        console.log('Image uploaded successfully:', imageUrl);
       } catch (error) {
         console.error('Error uploading image:', error);
-        return res.status(500).json({
-          status: 'error',
-          message: 'Error uploading profile image. Please try again or skip image upload.'
-        });
+        // If image upload fails, continue with registration without image
+        console.log('Continuing registration without image...');
       }
     }
 
@@ -118,7 +118,7 @@ exports.register = async (req, res) => {
     console.error('Registration error:', error);
     res.status(500).json({
       status: 'error',
-      message: 'Error registering user'
+      message: error.message || 'Error registering user'
     });
   }
 };
