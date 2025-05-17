@@ -74,13 +74,15 @@ exports.register = async (req, res) => {
           throw new Error('Failed to upload image: No secure URL returned');
         }
         imageUrl = result.secure_url;
-        console.log('Image uploaded successfully:', imageUrl);
+        console.log('Image uploaded successfully, URL:', imageUrl);
       } catch (error) {
         console.error('Error uploading image:', error);
         // If image upload fails, continue with registration without image
         console.log('Continuing registration without image...');
       }
     }
+
+    console.log('Saving user with photo URL:', imageUrl);
 
     // Create new user
     const user = await User.create({
