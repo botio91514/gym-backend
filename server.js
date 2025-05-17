@@ -12,6 +12,8 @@ const authRoutes = require('./routes/authRoutes');
 const sendEmail = require('./services/emailService');
 const { checkExpiredSubscriptions } = require('./services/subscriptionService');
 const healthRoutes = require('./routes/healthRoutes');
+const multer = require('multer');
+const APIError = require('./utils/APIError');
 
 // Initialize express app
 const app = express();
@@ -44,6 +46,12 @@ const uploadsDir = path.join(__dirname, 'public/uploads');
 if (!fs.existsSync(uploadsDir)){
     fs.mkdirSync(uploadsDir, { recursive: true });
 }
+
+// Configure multer for memory storage
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 } // Limit file size to 5MB
+});
 
 // Serve static files with proper headers and CORS
 app.use('/uploads', (req, res, next) => {
@@ -208,6 +216,12 @@ const scheduleSubscriptionCheck = () => {
 };
 
 scheduleSubscriptionCheck();
+
+// Serve static files from the 'public' directory
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Make multer upload middleware available (optional, but good for clarity)
+app.locals.upload = upload;
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

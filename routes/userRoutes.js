@@ -21,4 +21,7 @@ router.patch('/:id', userController.updateUser);
 router.delete('/:id', userController.deleteUser);
 router.post('/notify-expired/:userId', userController.notifyExpiredMember);
 
+// New route to update user photo - uses multer middleware
+router.patch('/:userId/photo', upload.single('photo'), userController.updateUserPhoto);
+
 module.exports = router;

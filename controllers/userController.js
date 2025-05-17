@@ -506,3 +506,80 @@ exports.checkEmail = async (req, res) => {
     });
   }
 };
+
+// Add new controller function to update user photo
+exports.updateUserPhoto = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Check if a file was uploaded
+    if (!req.file) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'No image file uploaded.'
+      });
+    }
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    if (!allowedTypes.includes(req.file.mimetype)) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Invalid image format. Please upload JPEG, PNG, or GIF.'
+      });
+    }
+
+    // Validate file size (5MB)
+    const maxSize = 5 * 1024 * 1024;
+    if (req.file.size > maxSize) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Image size should be less than 5MB'
+      });
+    }
+
+    console.log('Attempting to upload new profile image to Cloudinary...');
+    const result = await uploadImage(req.file.buffer);
+
+    if (!result || !result.secure_url) {
+      throw new Error('Failed to upload image to Cloudinary.');
+    }
+
+    const imageUrl = result.secure_url;
+    console.log('Image uploaded successfully, URL:', imageUrl);
+
+    // Find user and update photo
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'User not found.'
+      });
+    }
+
+    // Optional: Delete old image from Cloudinary if it exists and is not a default
+    // This requires storing the public ID of the old image, which we are not currently doing.
+    // For now, we'll just overwrite the URL.
+
+    user.photo = imageUrl;
+    await user.save();
+
+    console.log('User photo updated successfully:', user.photo);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Profile photo updated successfully!',
+      data: {
+        user
+      }
+    });
+
+  } catch (error) {
+    console.error('Error updating user photo:', error);
+    res.status(500).json({
+      status: 'error',
+      message: error.message || 'Failed to update profile photo.'
+    });
+  }
+};
