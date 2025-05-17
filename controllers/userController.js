@@ -26,8 +26,12 @@ exports.register = async (req, res) => {
       return res.status(400).json({ status: 'error', message: errors });
     }
 
-    // Check if user with email already exists
-    const existingUserEmail = await User.findOne({ email });
+    // Check if user with email or phone already exists - do this in parallel
+    const [existingUserEmail, existingUserPhone] = await Promise.all([
+      User.findOne({ email }),
+      User.findOne({ phone })
+    ]);
+
     if (existingUserEmail) {
       return res.status(400).json({
         status: 'error',
@@ -35,8 +39,6 @@ exports.register = async (req, res) => {
       });
     }
 
-    // Check if user with phone already exists
-    const existingUserPhone = await User.findOne({ phone });
     if (existingUserPhone) {
       return res.status(400).json({
         status: 'error',
@@ -48,13 +50,34 @@ exports.register = async (req, res) => {
     let imageUrl = null;
     if (req.file) {
       try {
+        // Validate file type
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        if (!allowedTypes.includes(req.file.mimetype)) {
+          return res.status(400).json({
+            status: 'error',
+            message: 'Invalid image format. Please upload JPEG, PNG, or GIF.'
+          });
+        }
+
+        // Validate file size (5MB)
+        const maxSize = 5 * 1024 * 1024;
+        if (req.file.size > maxSize) {
+          return res.status(400).json({
+            status: 'error',
+            message: 'Image size should be less than 5MB'
+          });
+        }
+
         const result = await uploadImage(req.file.buffer);
+        if (!result || !result.secure_url) {
+          throw new Error('Failed to upload image');
+        }
         imageUrl = result.secure_url;
       } catch (error) {
         console.error('Error uploading image:', error);
         return res.status(500).json({
           status: 'error',
-          message: 'Error uploading profile image'
+          message: 'Error uploading profile image. Please try again or skip image upload.'
         });
       }
     }
@@ -74,13 +97,17 @@ exports.register = async (req, res) => {
       image: imageUrl
     });
 
-    // Send registration confirmation email
-    await sendEmail({
+    // Send registration confirmation email in the background
+    sendEmail({
       email: user.email,
       subject: 'Welcome to Gym Test - Registration Confirmation',
       html: createRegistrationEmail(user)
+    }).catch(error => {
+      console.error('Error sending registration email:', error);
+      // Don't block the response if email fails
     });
 
+    // Return success response immediately
     res.status(201).json({
       status: 'success',
       data: {
