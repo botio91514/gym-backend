@@ -5,7 +5,7 @@ const Admin = require('./models/Admin');
 
 async function verifyAndResetAdmin() {
     try {
-        // Connect to MongoDB
+        // Connect to MongoDb
         await mongoose.connect(process.env.MONGODB_URI);
         console.log('Connected to MongoDB...');
 
